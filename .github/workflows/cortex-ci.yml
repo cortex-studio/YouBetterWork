@@ -1,0 +1,84 @@
+name: CortexCI
+
+on:
+  repository_dispatch:
+    types: [cortex-ci]
+
+env:
+  UNITY_EMAIL: ${{ secrets.CORTEX_UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.CORTEX_UNITY_PASSWORD }}
+  UNITY_SERIAL: ${{ secrets.CORTEX_UNITY_SERIAL }}
+
+  APPLE_CONNECT_EMAIL: ${{ secrets.CORTEX_APPLE_CONNECT_EMAIL }}
+  APPLE_DEVELOPER_EMAIL: ${{ secrets.CORTEX_APPLE_DEVELOPER_EMAIL }}
+  APPLE_DEVELOPER_TEAM_ID: ${{ secrets.CORTEX_APPLE_DEVELOPER_TEAM_ID }}
+  APPLE_CONNECT_TEAM_ID: ${{ secrets.CORTEX_APPLE_CONNECT_TEAM_ID }}
+
+  APPSTORE_ISSUER_ID: ${{ secrets.CORTEX_APPSTORE_ISSUER_ID }}
+  APPSTORE_P8: ${{ secrets.CORTEX_APPSTORE_P8 }}
+  APPSTORE_KEY_ID: ${{ secrets.CORTEX_APPSTORE_KEY_ID }}
+
+  MATCH_URL: ${{ secrets.CORTEX_CERTIFICATES_REPO_URL }}
+  MATCH_PASSWORD: ${{ secrets.CORTEX_CERTIFICATES_PASSWORD }}
+  MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
+
+  IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
+  APP_IDENTIFIER: ${{github.event.inputs.appIdentifier}}
+  TARGET_PLATFORM: ${{github.event.client_payload.targetPlatform}}
+
+  GAME_BUILD_ID: ${{github.event.client_payload.game.buildId}}
+  GAME_NAME: ${{github.event.client_payload.game.name}}
+  GAME_VERSION: ${{github.event.client_payload.game.version}}
+  GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
+  GAME_BUILD_MODE: ${{github.event.client_payload.buildMode}}
+  SDK_FACEBOOK_ID: ${{github.event.client_payload.sdk.facebookId}}
+  SDK_ELEPHANT_GAME_ID: ${{github.event.client_payload.sdk.elephantGameId}}
+  SDK_ELEPHANT_GAME_SECRET: ${{github.event.client_payload.sdk.elephantGameSecret}}
+  CORTEX_API_SECRET: ${{github.event.client_payload.cortexApiSecret}}
+  CORTEX_TOKEN: ${{ github.event.client_payload.cortexToken }}
+  ENVIRONMENT: ${{github.event.client_payload.environment}}
+
+jobs:
+  unityBuild:
+    name: Unity Build
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Checkout Cortex CI Core
+        uses: actions/checkout@v3
+        with:
+          repository: gameflexteam/cortex-ci-core
+          token: ${{ env.CORTEX_TOKEN }}
+          path: ./.github/cortex
+
+      - name: Build Unity
+        uses: ./.github/cortex/actions/build-unity
+        with:
+          targetPlatform: ${{env.TARGET_PLATFORM}}
+          cortexToken: ${{ env.CORTEX_TOKEN }}
+          diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
+
+  xcodeBuild:
+    name: XCode Build
+    runs-on: macos-latest
+    needs: unityBuild
+    if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+    steps:
+      - name: Checkout Cortex CI Core
+        uses: actions/checkout@v3
+        with:
+          repository: gameflexteam/cortex-ci-core
+          token: ${{ env.CORTEX_TOKEN }}
+          path: ./.github/cortex
+
+      - name: Build Xcode
+        uses: ./.github/cortex/actions/build-xcode
+        with:
+          cortexToken: ${{ env.CORTEX_TOKEN }}
+          diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
