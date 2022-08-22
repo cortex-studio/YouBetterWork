@@ -23,8 +23,7 @@ env:
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
 
   IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
-  APP_IDENTIFIER: ${{github.event.inputs.appIdentifier}}
-  TARGET_PLATFORM: ${{github.event.client_payload.targetPlatform}}
+  APP_IDENTIFIER: ${{github.event.client_payload.appIdentifier}}
 
   GAME_BUILD_ID: ${{github.event.client_payload.game.buildId}}
   GAME_NAME: ${{github.event.client_payload.game.name}}
@@ -60,7 +59,7 @@ jobs:
       - name: Build Unity
         uses: ./.github/cortex/actions/build-unity
         with:
-          targetPlatform: ${{env.TARGET_PLATFORM}}
+          targetPlatform: ${{github.event.client_payload.targetPlatform}}
           cortexToken: ${{ env.CORTEX_TOKEN }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
 
@@ -68,7 +67,7 @@ jobs:
     name: XCode Build
     runs-on: macos-latest
     needs: unityBuild
-    if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+    if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
     steps:
       - name: Checkout Cortex CI Core
         uses: actions/checkout@v3
