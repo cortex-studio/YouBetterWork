@@ -33,13 +33,11 @@ env:
   SDK_FACEBOOK_ID: ${{github.event.client_payload.sdk.facebookId}}
   SDK_ELEPHANT_GAME_ID: ${{github.event.client_payload.sdk.elephantGameId}}
   SDK_ELEPHANT_GAME_SECRET: ${{github.event.client_payload.sdk.elephantGameSecret}}
-  CORTEX_API_SECRET: ${{github.event.client_payload.cortexApiSecret}}
-  CORTEX_TOKEN: ${{ github.event.client_payload.cortexToken }}
   ENVIRONMENT: ${{github.event.client_payload.environment}}
 
 jobs:
   unityBuild:
-    name: Unity Build
+    name: unity
     runs-on: ubuntu-latest
     steps:
       # Checkout
@@ -53,18 +51,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
-          token: ${{ env.CORTEX_TOKEN }}
+          token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
       - name: Build Unity
         uses: ./.github/cortex/actions/build-unity
         with:
           targetPlatform: ${{github.event.client_payload.targetPlatform}}
-          cortexToken: ${{ env.CORTEX_TOKEN }}
+          cortexToken: ${{ github.event.client_payload.cortexToken }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
+          cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
 
   xcodeBuild:
-    name: XCode Build
+    name: xcode
     runs-on: macos-latest
     needs: unityBuild
     if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
@@ -73,11 +72,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
-          token: ${{ env.CORTEX_TOKEN }}
+          token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
       - name: Build Xcode
         uses: ./.github/cortex/actions/build-xcode
         with:
-          cortexToken: ${{ env.CORTEX_TOKEN }}
+          cortexToken: ${{ github.event.client_payload.cortexToken }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
+          cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
