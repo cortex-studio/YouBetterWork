@@ -20,7 +20,6 @@ namespace PerfectDrift
         public void OnMoneyGain()
         {
             StartCoroutine("PlayTweenCo");
-            test = 5;
         }
 
         private IEnumerator PlayTweenCo()
