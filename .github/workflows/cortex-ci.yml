@@ -41,20 +41,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout
-      - name: Checkout Repository
+      - name: CheckoutRepository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           lfs: true
 
-      - name: Checkout Cortex CI Core
+      - name: CheckoutCortexCICore
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
           token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
-      - name: Build Unity
+      - name: BuildUnity
         uses: ./.github/cortex/actions/build-unity
         with:
           targetPlatform: ${{github.event.client_payload.targetPlatform}}
@@ -68,14 +68,14 @@ jobs:
     needs: unityBuild
     if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
     steps:
-      - name: Checkout Cortex CI Core
+      - name: CheckoutCortexCICore
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
           token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
-      - name: Build Xcode
+      - name: BuildXcode
         uses: ./.github/cortex/actions/build-xcode
         with:
           cortexToken: ${{ github.event.client_payload.cortexToken }}
