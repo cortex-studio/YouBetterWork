@@ -61,6 +61,7 @@ jobs:
           cortexToken: ${{ github.event.client_payload.cortexToken }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
           cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
+          includeSdk: ${{github.event.client_payload.includeSdk}}
 
   xcodeBuild:
     name: xcode
