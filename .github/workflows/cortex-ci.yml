@@ -22,7 +22,6 @@ env:
   MATCH_PASSWORD: ${{ secrets.CORTEX_CERTIFICATES_PASSWORD }}
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
 
-  IOS_BUILD_PATH: ${{ format('{0}/build/iOS', github.workspace) }}
   APP_IDENTIFIER: ${{github.event.client_payload.appIdentifier}}
 
   GAME_BUILD_ID: ${{github.event.client_payload.game.buildId}}
@@ -30,6 +29,7 @@ env:
   GAME_VERSION: ${{github.event.client_payload.game.version}}
   GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
   GAME_BUILD_MODE: ${{github.event.client_payload.buildMode}}
+  SDK_STATUS: ${{github.event.client_payload.sdkStatus}}
   SDK_FACEBOOK_ID: ${{github.event.client_payload.sdk.facebookId}}
   SDK_ELEPHANT_GAME_ID: ${{github.event.client_payload.sdk.elephantGameId}}
   SDK_ELEPHANT_GAME_SECRET: ${{github.event.client_payload.sdk.elephantGameSecret}}
@@ -61,7 +61,6 @@ jobs:
           cortexToken: ${{ github.event.client_payload.cortexToken }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
           cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
-          includeSdk: ${{github.event.client_payload.includeSdk}}
 
   xcodeBuild:
     name: xcode
