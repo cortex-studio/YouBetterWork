@@ -38,7 +38,7 @@ env:
 jobs:
   unityBuild:
     name: unity
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Checkout
       - name: CheckoutRepository
