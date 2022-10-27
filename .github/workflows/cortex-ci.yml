@@ -64,7 +64,7 @@ jobs:
 
   xcodeBuild:
     name: xcode
-    runs-on: macos-12
+    runs-on: macos-latest
     needs: unityBuild
     if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
     steps:
