@@ -22,18 +22,22 @@ env:
   MATCH_PASSWORD: ${{ secrets.CORTEX_CERTIFICATES_PASSWORD }}
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
 
+  ANDROID_KEYSTORE_NAME: ${{ secrets.CORTEX_ANDROID_KEYSTORE_NAME }}
+  ANDROID_KEYSTORE_BASE64: ${{ secrets.CORTEX_ANDROID_KEYSTORE_BASE64 }}
+  ANDROID_KEYSTORE_PASS: ${{ secrets.CORTEX_ANDROID_KEYSTORE_PASS }}
+  ANDROID_KEYALIAS_NAME: ${{ secrets.CORTEX_ANDROID_KEYALIAS_NAME }}
+  ANDROID_KEYALIAS_PASS: ${{ secrets.CORTEX_ANDROID_KEYALIAS_PASS }}
+
   APP_IDENTIFIER: ${{github.event.client_payload.appIdentifier}}
 
+  GAME_ID: ${{github.event.client_payload.game.id}}
   GAME_BUILD_ID: ${{github.event.client_payload.game.buildId}}
   GAME_NAME: ${{github.event.client_payload.game.name}}
   GAME_VERSION: ${{github.event.client_payload.game.version}}
   GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
   GAME_BUILD_MODE: ${{github.event.client_payload.buildMode}}
-  SDK_STATUS: ${{github.event.client_payload.sdkStatus}}
-  SDK_FACEBOOK_ID: ${{github.event.client_payload.sdk.facebookId}}
-  SDK_ELEPHANT_GAME_ID: ${{github.event.client_payload.sdk.elephantGameId}}
-  SDK_ELEPHANT_GAME_SECRET: ${{github.event.client_payload.sdk.elephantGameSecret}}
   ENVIRONMENT: ${{github.event.client_payload.environment}}
+  CI_VERSION: ${{github.event.client_payload.ciVersion}}
 
 jobs:
   unityBuild:
@@ -44,6 +48,7 @@ jobs:
       - name: CheckoutRepository
         uses: actions/checkout@v3
         with:
+          submodules: "true"
           fetch-depth: 0
           lfs: true
 
@@ -51,6 +56,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
+          ref: ${{ env.CI_VERSION }}
           token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
@@ -60,6 +66,7 @@ jobs:
           targetPlatform: ${{github.event.client_payload.targetPlatform}}
           cortexToken: ${{ github.event.client_payload.cortexToken }}
           diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
+          gcpCredentials: ${{secrets.CORTEX_GCP_CREDENTIALS}}
           cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
 
   xcodeBuild:
@@ -72,6 +79,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: gameflexteam/cortex-ci-core
+          ref: ${{ env.CI_VERSION }}
           token: ${{ github.event.client_payload.cortexToken }}
           path: ./.github/cortex
 
