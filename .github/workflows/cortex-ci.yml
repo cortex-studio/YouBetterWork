@@ -37,6 +37,7 @@ env:
   GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
   GAME_BUILD_MODE: ${{github.event.client_payload.buildMode}}
   ENVIRONMENT: ${{github.event.client_payload.environment}}
+  CI_VERSION: ${{github.event.client_payload.ciVersion}}
 
 jobs:
   unityBuild:
