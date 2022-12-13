@@ -28,6 +28,8 @@ env:
   ANDROID_KEYALIAS_NAME: ${{ secrets.CORTEX_ANDROID_KEYALIAS_NAME }}
   ANDROID_KEYALIAS_PASS: ${{ secrets.CORTEX_ANDROID_KEYALIAS_PASS }}
 
+  GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.CORTEX_GOOGLE_PLAY_SERVICE_ACCOUNT }}
+
   APP_IDENTIFIER: ${{github.event.client_payload.appIdentifier}}
 
   GAME_ID: ${{github.event.client_payload.game.id}}
@@ -37,7 +39,7 @@ env:
   GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
   GAME_BUILD_MODE: ${{github.event.client_payload.buildMode}}
   ENVIRONMENT: ${{github.event.client_payload.environment}}
-  CI_VERSION: ${{github.event.client_payload.ciVersion}}
+  CI_VERSION: "v1.3.0"
 
 jobs:
   unityBuild:
