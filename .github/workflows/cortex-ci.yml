@@ -41,6 +41,7 @@ env:
   GAME_BUILD_MODE: ${{ github.event.client_payload.buildMode }}
   ENVIRONMENT: ${{ github.event.client_payload.environment }}
   CI_VERSION: ${{ github.event.client_payload.ciVersion }}
+  XCODE_VERSION: "13.4.1"
 
 jobs:
   unityBuild:
