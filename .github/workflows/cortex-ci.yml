@@ -21,6 +21,7 @@ env:
   MATCH_URL: ${{ secrets.CORTEX_CERTIFICATES_REPO_URL }}
   MATCH_PASSWORD: ${{ secrets.CORTEX_CERTIFICATES_PASSWORD }}
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
+  MATCH_PAT_EMAIL: ${{ secrets.CORTEX_CERTIFICATES_PAT_EMAIL }}
 
   ANDROID_KEYSTORE_NAME: ${{ secrets.CORTEX_ANDROID_KEYSTORE_NAME }}
   ANDROID_KEYSTORE_BASE64: ${{ secrets.CORTEX_ANDROID_KEYSTORE_BASE64 }}
@@ -41,7 +42,7 @@ env:
   GAME_BUILD_MODE: ${{ github.event.client_payload.buildMode }}
   ENVIRONMENT: ${{ github.event.client_payload.environment }}
   CI_VERSION: ${{ github.event.client_payload.ciVersion }}
-  XCODE_VERSION: "13.4.1"
+  XCODE_VERSION: "14.3.1"
 
 jobs:
   unityBuild:
@@ -52,6 +53,7 @@ jobs:
       - name: CheckoutRepository
         uses: actions/checkout@v3
         with:
+          ref: ${{ github.event.client_payload.branch }}
           token: ${{ github.event.client_payload.cortexToken }}
           submodules: true
           fetch-depth: 0
@@ -76,7 +78,7 @@ jobs:
 
   xcodeBuild:
     name: xcode
-    runs-on: macos-12
+    runs-on: macos-13
     needs: unityBuild
     if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
     steps:
