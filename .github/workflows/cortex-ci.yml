@@ -23,26 +23,26 @@ env:
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
   MATCH_PAT_EMAIL: ${{ secrets.CORTEX_CERTIFICATES_PAT_EMAIL }}
 
+  GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.CORTEX_GOOGLE_PLAY_SERVICE_ACCOUNT }}
+
   ANDROID_KEYSTORE_NAME: ${{ secrets.CORTEX_ANDROID_KEYSTORE_NAME }}
   ANDROID_KEYSTORE_BASE64: ${{ secrets.CORTEX_ANDROID_KEYSTORE_BASE64 }}
   ANDROID_KEYSTORE_PASS: ${{ secrets.CORTEX_ANDROID_KEYSTORE_PASS }}
   ANDROID_KEYALIAS_NAME: ${{ secrets.CORTEX_ANDROID_KEYALIAS_NAME }}
   ANDROID_KEYALIAS_PASS: ${{ secrets.CORTEX_ANDROID_KEYALIAS_PASS }}
-  ANDROID_UPLOAD_PLAYSTORE: ${{ github.event.client_payload.uploadPlayStore }}
+  ANDROID_UPLOAD_PLAYSTORE: ${{ github.event.client_payload.build.uploadPlayStore }}
 
-  GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.CORTEX_GOOGLE_PLAY_SERVICE_ACCOUNT }}
-
-  APP_IDENTIFIER: ${{ github.event.client_payload.appIdentifier }}
+  APP_IDENTIFIER: ${{ github.event.client_payload.build.appIdentifier }}
 
   GAME_ID: ${{ github.event.client_payload.game.id }}
   GAME_BUILD_ID: ${{ github.event.client_payload.game.buildId }}
   GAME_NAME: ${{ github.event.client_payload.game.name }}
   GAME_VERSION: ${{ github.event.client_payload.game.version }}
   GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
-  GAME_BUILD_MODE: ${{ github.event.client_payload.buildMode }}
-  ENVIRONMENT: ${{ github.event.client_payload.environment }}
+  GAME_BUILD_MODE: ${{ github.event.client_payload.build.buildMode }}
+  ENVIRONMENT: ${{ github.event.client_payload.build.environment }}
   CI_VERSION: ${{ github.event.client_payload.ciVersion }}
-  XCODE_VERSION: "14.3.1"
+  XCODE_VERSION: "15.1"
 
 jobs:
   unityBuild:
@@ -51,48 +51,46 @@ jobs:
     steps:
       # Checkout
       - name: CheckoutRepository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.branch }}
-          token: ${{ github.event.client_payload.cortexToken }}
+          ref: ${{ github.event.client_payload.build.ref }}
+          token: ${{ secrets.CORTEX_COMPANY_GITHUB_TOKEN }}
           submodules: true
           fetch-depth: 0
           lfs: true
 
       - name: CheckoutCortexCICore
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: gameflexteam/cortex-ci-core
           ref: ${{ env.CI_VERSION }}
-          token: ${{ github.event.client_payload.cortexToken }}
+          token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
       - name: BuildUnity
         uses: ./.github/cortex/actions/build-unity
         with:
-          targetPlatform: ${{github.event.client_payload.targetPlatform}}
-          cortexToken: ${{ github.event.client_payload.cortexToken }}
-          diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
+          targetPlatform: ${{ github.event.client_payload.build.targetPlatform }}
+          diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           storageCredentials: ${{ secrets.CORTEX_GCP_CREDENTIALS }}
-          cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
+          cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
 
   xcodeBuild:
     name: xcode
     runs-on: macos-13
     needs: unityBuild
-    if: ${{ github.event.client_payload.targetPlatform == 'iOS' }}
+    if: ${{ github.event.client_payload.build.targetPlatform == 'iOS' }}
     steps:
       - name: CheckoutCortexCICore
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: gameflexteam/cortex-ci-core
           ref: ${{ env.CI_VERSION }}
-          token: ${{ github.event.client_payload.cortexToken }}
+          token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
       - name: BuildXcode
         uses: ./.github/cortex/actions/build-xcode
         with:
-          cortexToken: ${{ github.event.client_payload.cortexToken }}
-          diawiToken: ${{secrets.CORTEX_DIAWI_TOKEN}}
-          cortexApiSecret: ${{github.event.client_payload.cortexApiSecret}}
+          diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
+          cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
