@@ -47,7 +47,7 @@ env:
 jobs:
   unityBuild:
     name: unity
-    runs-on: gf2-ubuntu-22.04
+    runs-on: ubuntu-22.04
     steps:
       # Checkout
       - name: CheckoutRepository
