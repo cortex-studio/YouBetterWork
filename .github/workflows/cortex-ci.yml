@@ -75,6 +75,7 @@ jobs:
           storageCredentials: ${{ secrets.CORTEX_GCP_CREDENTIALS }}
           cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
           diskCleanUp: true
+          useCache: false
 
   xcodeBuild:
     name: xcode
