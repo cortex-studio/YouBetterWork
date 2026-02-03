@@ -42,7 +42,7 @@ env:
   GAME_BUILD_MODE: ${{ github.event.client_payload.build.buildMode }}
   ENVIRONMENT: ${{ github.event.client_payload.build.environment }}
   CI_VERSION: ${{ github.event.client_payload.ciVersion }}
-  XCODE_VERSION: "15.3"
+  XCODE_VERSION: "15.4"
 
 jobs:
   unityBuild:
@@ -56,7 +56,6 @@ jobs:
           ref: ${{ github.event.client_payload.build.ref }}
           token: ${{ secrets.CORTEX_COMPANY_GITHUB_TOKEN }}
           submodules: true
-          fetch-depth: 0
           lfs: true
 
       - name: CheckoutCortexCICore
@@ -74,8 +73,6 @@ jobs:
           diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           storageCredentials: ${{ secrets.CORTEX_GCP_CREDENTIALS }}
           cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
-          diskCleanUp: true
-          useCache: false
 
   xcodeBuild:
     name: xcode
@@ -96,3 +93,4 @@ jobs:
         with:
           diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
+          diskCleanUp: true
