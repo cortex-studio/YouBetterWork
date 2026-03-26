@@ -35,10 +35,10 @@ env:
 jobs:
   build-unity:
     name: unity
-    runs-on: ubuntu-latest
+    runs-on: gf-ubuntu-8core
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.client_payload.build.ref }}
           token: ${{ secrets.CORTEX_COMPANY_GITHUB_TOKEN }}
@@ -46,10 +46,10 @@ jobs:
           lfs: true
 
       - name: Checkout Cortex CI Core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: gameflexteam/cortex-ci-core
-          ref: 'v2.0.0' # default: ${{ github.event.client_payload.ciVersion }}
+          ref: ${{ github.event.client_payload.ciVersion }}
           token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
@@ -67,21 +67,22 @@ jobs:
           cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
           diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           storageCredentials: ${{ secrets.CORTEX_GCP_CREDENTIALS }}
+          googlePlayServiceAccount: ${{ secrets.CORTEX_GOOGLE_PLAY_SERVICE_ACCOUNT }}
           gameId: ${{ github.event.client_payload.game.id }}
-          androidUploadPlaystore: ${{ github.event.client_payload.build.uploadPlayStore || 'false' }}
+          androidUploadPlaystore: ${{ github.event.client_payload.build.uploadPlayStore }}
           metadataLanguages: ${{ github.event.client_payload.build.metadataLanguages }}
 
   build-xcode:
     name: xcode
-    runs-on: macos-15
+    runs-on: macos-15-xlarge
     needs: build-unity
     if: ${{ github.event.client_payload.build.targetPlatform == 'iOS' }}
     steps:
       - name: Checkout Cortex CI Core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: gameflexteam/cortex-ci-core
-          ref: 'v2.0.0' # default: ${{ github.event.client_payload.ciVersion }}
+          ref: ${{ github.event.client_payload.ciVersion }}
           token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
