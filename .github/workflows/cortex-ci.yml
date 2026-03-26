@@ -5,52 +5,39 @@ on:
     types: [cortex-ci]
 
 env:
+  # Unity credentials
   UNITY_EMAIL: ${{ secrets.CORTEX_UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.CORTEX_UNITY_PASSWORD }}
   UNITY_SERIAL: ${{ secrets.CORTEX_UNITY_SERIAL }}
 
+  # Apple credentials
   APPLE_CONNECT_EMAIL: ${{ secrets.CORTEX_APPLE_CONNECT_EMAIL }}
   APPLE_DEVELOPER_EMAIL: ${{ secrets.CORTEX_APPLE_DEVELOPER_EMAIL }}
   APPLE_DEVELOPER_TEAM_ID: ${{ secrets.CORTEX_APPLE_DEVELOPER_TEAM_ID }}
   APPLE_CONNECT_TEAM_ID: ${{ secrets.CORTEX_APPLE_CONNECT_TEAM_ID }}
-
   APPSTORE_ISSUER_ID: ${{ secrets.CORTEX_APPSTORE_ISSUER_ID }}
   APPSTORE_P8: ${{ secrets.CORTEX_APPSTORE_P8 }}
   APPSTORE_KEY_ID: ${{ secrets.CORTEX_APPSTORE_KEY_ID }}
 
+  # Code signing
   MATCH_URL: ${{ secrets.CORTEX_CERTIFICATES_REPO_URL }}
   MATCH_PASSWORD: ${{ secrets.CORTEX_CERTIFICATES_PASSWORD }}
   MATCH_PAT: ${{ secrets.CORTEX_CERTIFICATES_PAT }}
   MATCH_PAT_EMAIL: ${{ secrets.CORTEX_CERTIFICATES_PAT_EMAIL }}
 
-  GOOGLE_PLAY_SERVICE_ACCOUNT: ${{ secrets.CORTEX_GOOGLE_PLAY_SERVICE_ACCOUNT }}
-
+  # Android signing
   ANDROID_KEYSTORE_NAME: ${{ secrets.CORTEX_ANDROID_KEYSTORE_NAME }}
   ANDROID_KEYSTORE_BASE64: ${{ secrets.CORTEX_ANDROID_KEYSTORE_BASE64 }}
   ANDROID_KEYSTORE_PASS: ${{ secrets.CORTEX_ANDROID_KEYSTORE_PASS }}
   ANDROID_KEYALIAS_NAME: ${{ secrets.CORTEX_ANDROID_KEYALIAS_NAME }}
   ANDROID_KEYALIAS_PASS: ${{ secrets.CORTEX_ANDROID_KEYALIAS_PASS }}
-  ANDROID_UPLOAD_PLAYSTORE: ${{ github.event.client_payload.build.uploadPlayStore }}
-
-  APP_IDENTIFIER: ${{ github.event.client_payload.build.appIdentifier }}
-
-  GAME_ID: ${{ github.event.client_payload.game.id }}
-  GAME_BUILD_ID: ${{ github.event.client_payload.game.buildId }}
-  GAME_NAME: ${{ github.event.client_payload.game.name }}
-  GAME_VERSION: ${{ github.event.client_payload.game.version }}
-  GAME_BUILD_NUMBER: ${{ github.event.client_payload.game.buildNumber }}
-  GAME_BUILD_MODE: ${{ github.event.client_payload.build.buildMode }}
-  ENVIRONMENT: ${{ github.event.client_payload.build.environment }}
-  CI_VERSION: ${{ github.event.client_payload.ciVersion }}
-  XCODE_VERSION: "15.4"
 
 jobs:
-  unityBuild:
+  build-unity:
     name: unity
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      # Checkout
-      - name: CheckoutRepository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.build.ref }}
@@ -58,39 +45,56 @@ jobs:
           submodules: true
           lfs: true
 
-      - name: CheckoutCortexCICore
+      - name: Checkout Cortex CI Core
         uses: actions/checkout@v4
         with:
           repository: gameflexteam/cortex-ci-core
-          ref: ${{ env.CI_VERSION }}
+          ref: ${{ github.event.client_payload.ciVersion }}
           token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
-      - name: BuildUnity
+      - name: Build Unity
         uses: ./.github/cortex/actions/build-unity
         with:
           targetPlatform: ${{ github.event.client_payload.build.targetPlatform }}
+          environment: ${{ github.event.client_payload.build.environment }}
+          gameBuildId: ${{ github.event.client_payload.game.buildId }}
+          gameVersion: ${{ github.event.client_payload.game.version }}
+          gameBuildNumber: ${{ github.event.client_payload.game.buildNumber }}
+          appIdentifier: ${{ github.event.client_payload.build.appIdentifier }}
+          gameName: ${{ github.event.client_payload.game.name }}
+          gameBuildMode: ${{ github.event.client_payload.build.buildMode }}
+          cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
           diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           storageCredentials: ${{ secrets.CORTEX_GCP_CREDENTIALS }}
-          cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
+          gameId: ${{ github.event.client_payload.game.id }}
+          androidUploadPlaystore: ${{ github.event.client_payload.build.uploadPlayStore || 'false' }}
+          metadataLanguages: ${{ github.event.client_payload.build.metadataLanguages }}
 
-  xcodeBuild:
+  build-xcode:
     name: xcode
-    runs-on: macos-14
-    needs: unityBuild
+    runs-on: macos-15
+    needs: build-unity
     if: ${{ github.event.client_payload.build.targetPlatform == 'iOS' }}
     steps:
-      - name: CheckoutCortexCICore
+      - name: Checkout Cortex CI Core
         uses: actions/checkout@v4
         with:
           repository: gameflexteam/cortex-ci-core
-          ref: ${{ env.CI_VERSION }}
+          ref: ${{ github.event.client_payload.ciVersion }}
           token: ${{ secrets.CORTEX_CI_CORE_TOKEN }}
           path: ./.github/cortex
 
-      - name: BuildXcode
+      - name: Build Xcode
         uses: ./.github/cortex/actions/build-xcode
         with:
-          diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
           cortexApiSecret: ${{ github.event.client_payload.cortexApiSecret }}
-          diskCleanUp: true
+          environment: ${{ github.event.client_payload.build.environment }}
+          gameBuildId: ${{ github.event.client_payload.game.buildId }}
+          gameBuildMode: ${{ github.event.client_payload.build.buildMode }}
+          gameVersion: ${{ github.event.client_payload.game.version }}
+          gameBuildNumber: ${{ github.event.client_payload.game.buildNumber }}
+          appIdentifier: ${{ github.event.client_payload.build.appIdentifier }}
+          diawiToken: ${{ secrets.CORTEX_DIAWI_TOKEN }}
+          diskCleanUp: 'true'
+          xcodeVersion: ${{ github.event.client_payload.build.xcodeVersion }}
